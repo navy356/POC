@@ -1,0 +1,14 @@
+version: "3.9"
+   
+services:
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+      - "5900:5900"
+    environment:
+      - DBUS_SYSTEM_BUS_ADDRESS=unix:path=/host/run/dbus/system_bus_socket
+      - DISPLAY=:0

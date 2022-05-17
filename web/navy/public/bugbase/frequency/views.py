@@ -7,6 +7,12 @@ from selenium.webdriver.chrome.options import Options
 import time
 import os
 
+flag = os.environ['FLAG']
+options = Options()
+#options.add_argument('--headless')
+options.add_argument('--no-sandbox')
+options.add_argument('--disable-gpu')
+
 def index(request):
     if request.method == "GET":
         if request.GET.get('sentence') is None:
@@ -30,12 +36,9 @@ def css(request, color):
 
 def report(request):
     if request.method == "GET":
-        flag = os.environ['FLAG']
+        global flag
+        global options
         path = request.GET.get('path')
-        options = Options()
-        options.add_argument('--headless')
-        options.add_argument('--no-sandbox')
-        options.add_argument('--disable-gpu')
         driver = webdriver.Remote(command_executor='http://selenium:4444/wd/hub',options=options)
         url = f'http://django:8000/{path}'
         if '?' in path:
@@ -43,6 +46,6 @@ def report(request):
         else:
             url = url + f'?sentence={flag}'
         driver.get(url)
-        time.sleep(20)
+        time.sleep(60)
         driver.close()
         return HttpResponse("OK")

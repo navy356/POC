@@ -1,9 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import render,HttpResponse
+from urllib3 import HTTPResponse
 from .forms import *
 from collections import Counter
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import time
+import os
 
 def index(request):
     if request.method == "GET":
@@ -28,18 +30,19 @@ def css(request, color):
 
 def report(request):
     if request.method == "GET":
-        flag = 'aFb'
+        flag = os.environ['FLAG']
         path = request.GET.get('path')
         options = Options()
         options.add_argument('--headless')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-gpu')
-        driver = webdriver.Chrome('/usr/bin/chromedriver',chrome_options=options)
-        url = f'http://127.0.0.1:8000/{path}'
+        driver = webdriver.Remote(command_executor='http://selenium:4444/wd/hub',options=options)
+        url = f'http://django:8000/{path}'
         if '?' in path:
             url = url + f'&sentence={flag}'
         else:
             url = url + f'?sentence={flag}'
         driver.get(url)
-        time.sleep(50)
-        return "OK"
+        time.sleep(20)
+        driver.close()
+        return HttpResponse("OK")

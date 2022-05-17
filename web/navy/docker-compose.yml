@@ -9,7 +9,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - FLAG=1l0v3c5s
+      - FLAG=1_L0v3~C5S
   selenium:
     build: selenium
     ports:

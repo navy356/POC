@@ -177,7 +177,7 @@ def create_leak_style2(selector,h,num,n):
 def create_stylesheet(n,selector,url):
     stylesheet = ""
     families = {}
-    font = ImageFont.truetype('/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf',size=30)
+    font = ImageFont.truetype('LiberationMono-Regular.ttf',size=30)
     w,h = font.getsize('A')
     for i in "}{_~"+string.ascii_lowercase + string.digits + string.ascii_uppercase:
         family, style = create_family(family=None,range=i,size='200%')

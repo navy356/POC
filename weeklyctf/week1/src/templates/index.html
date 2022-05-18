@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/style.css') }}">
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700|Montserrat:300" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Cardo:400,700|Oswald" rel="stylesheet">
+    <title>Trial</title>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Check if item in our shop</h1>
+      <form action="/" method="POST">
+        <input class="text" type="text" name="query" />
+        <br>
+        <input class="button" type="SUBMIT" value="SUBMIT" name="sub" />
+      </form>
+      <div class="output"><h2>{{ input }}</h2></div>
+    </div>
+  </body>
+</html>

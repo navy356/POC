@@ -12,7 +12,6 @@ options = Options()
 options.add_argument('--headless')
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-gpu')
-driver = None
 def index(request):
     if request.method == "GET":
         if request.GET.get('sentence') is None:
@@ -38,14 +37,11 @@ def report(request):
     if request.method == "GET":
         global flag
         global options
-        global driver
         try:
             path = request.GET.get('path')
-            if driver is None:
-                driver = webdriver.Remote(command_executor='http://selenium:4444/wd/hub',options=options)
-            else:
-                driver.get('chrome://settings/clearBrowserData') # for old chromedriver versions use cleardriverData
-                time.sleep(2)
+            driver = webdriver.Remote(command_executor='http://selenium:4444/wd/hub',options=options)
+            driver.get('chrome://settings/clearBrowserData')
+            time.sleep(2)
             url = f'http://django:8000/{path}'
             if '?' in path:
                 url = url + f'&sentence={flag}'
@@ -53,8 +49,7 @@ def report(request):
                 url = url + f'?sentence={flag}'
             driver.get(url)
             time.sleep(60)
-            driver.execute_script("window.open('');")
-            driver.close()
+            driver.quit()
         except Exception as e:
             print(e)
         return HttpResponse("OK")

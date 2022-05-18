@@ -19,8 +19,8 @@ import sys
 FLAG = ''
 FONT = 'Liberation Mono'
 #TARGET_URL = 'http://3.110.153.60:80'
-TARGET_URL = 'http://139.59.46.128:8000'
-#TARGET_URL = 'http://127.0.0.1:8000'
+#TARGET_URL = 'http://139.59.46.128:8000'
+TARGET_URL = 'http://127.0.0.1:8000'
 #TARGET_URL = 'http://c182-2409-4071-4e98-fbc9-6770-5f9-52fd-3c5f.ngrok.io'
 PORT = 8888
 if len(sys.argv)>1:

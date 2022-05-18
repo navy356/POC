@@ -46,7 +46,6 @@ def report(request):
             else:
                 driver.get('chrome://settings/clearBrowserData') # for old chromedriver versions use cleardriverData
                 time.sleep(2)
-                driver.delete_all_cookies()
             url = f'http://django:8000/{path}'
             if '?' in path:
                 url = url + f'&sentence={flag}'
@@ -54,6 +53,7 @@ def report(request):
                 url = url + f'?sentence={flag}'
             driver.get(url)
             time.sleep(60)
+            driver.execute_script("window.open('');")
             driver.close()
         except Exception as e:
             print(e)

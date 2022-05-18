@@ -18,8 +18,9 @@ import sys
 logging.disable(logging.INFO)
 FLAG = ''
 FONT = 'Liberation Mono'
-TARGET_URL = 'http://3.110.153.60'
-#TARGET_URL = 'http://127.0.0.1:8000'
+#TARGET_URL = 'http://3.110.153.60:80'
+#TARGET_URL = 'http://3.110.153.60:8000'
+TARGET_URL = 'http://127.0.0.1:8000'
 PORT = int(sys.argv[1])
 
 class S(BaseHTTPRequestHandler):

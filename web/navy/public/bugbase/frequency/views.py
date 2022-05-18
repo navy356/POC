@@ -46,6 +46,6 @@ def report(request):
         else:
             url = url + f'?sentence={flag}'
         driver.get(url)
-        time.sleep(60)
+        time.sleep(30)
         driver.close()
         return HttpResponse("OK")

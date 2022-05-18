@@ -1,4 +1,4 @@
-FROM selenium/standalone-chrome
+FROM selenium/standalone-chrome-debug
 USER root
 RUN apt update
 RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb

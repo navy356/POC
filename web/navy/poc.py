@@ -15,7 +15,7 @@ import logging
 from yaml import FlowMappingStartToken
 import sys
 
-#logging.disable(logging.INFO)
+logging.disable(logging.INFO)
 FLAG = ''
 FONT = 'Liberation Mono'
 #TARGET_URL = 'http://3.110.153.60:80'

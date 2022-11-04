@@ -1,0 +1,34 @@
+<script>
+    (async () => {
+        const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+        async function isRedirect (url1) {
+            const startTime = performance.now();
+            const a = await fetch(url1, { 'mode': 'no-cors', credentials: 'include', cache: 'no-store' });
+            const endTime = performance.now();
+            const timeTaken = endTime - startTime;
+            await sleep(1000);
+            const performanceEntry = performance.getEntriesByName(url1)[0];
+            const reportedDuration = performanceEntry.duration;
+            console.log(`Time taken for ${url1} to load: ${timeTaken}`);
+            console.log(`Reported time taken for ${url1} to load: ${reportedDuration}`);
+            // console.log(performanceEntry);
+            if ( (timeTaken - reportedDuration) > 5 ) {
+                console.log(`${url1} is a redirect?`);
+                return true;
+            } else {
+                console.log(`${url1} is not a redirect`);
+                return false;
+            }
+        }
+        const url1 = 'https://mail.google.com/mail/u/0/';
+        console.log('Starting test');
+        const r = await isRedirect(url1);
+        console.log('Finished test');
+        if(!window.location.hash) {
+        window.location = window.location + '#loaded';
+        window.location.reload();
+        }
+        console.log(`${r ? 'Gmail account is probably not logged in' : 'Gmail account is probably logged in'} -- based on redirect test`);
+        window.location = `${r ? 'http://172.17.0.1:8888?logged_in' : 'http://172.17.0.1:8888?not_logged in'}`;
+    })();
+</script>
